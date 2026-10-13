@@ -25,10 +25,12 @@ data class LoudStyle(val palette: LoudPalette, val shape: LoudShape) {
     val shadow get() = if (shape == LoudShape.Round) 4.dp else 5.dp
     val heading get() = if (shape == LoudShape.Round) BodyFont else DisplayFont
 }
+val LocalLoudHaptics = staticCompositionLocalOf { true }
+val LocalLoudDecorations = staticCompositionLocalOf { true }
 val LocalLoud = staticCompositionLocalOf { LoudStyle(LoudPalettes.Taxi, LoudShape.Square) }
 @Composable
-fun LoudTheme(palette: LoudPalette = LoudPalettes.Taxi, shape: LoudShape = LoudShape.Square, content: @Composable () -> Unit) {
-    CompositionLocalProvider(LocalLoud provides LoudStyle(palette, shape)) {
+fun LoudTheme(palette: LoudPalette = LoudPalettes.Taxi, shape: LoudShape = LoudShape.Square, haptics: Boolean = true, decorations: Boolean = true, content: @Composable () -> Unit) {
+    CompositionLocalProvider(LocalLoud provides LoudStyle(palette, shape), LocalLoudHaptics provides haptics, LocalLoudDecorations provides decorations) {
         MaterialTheme(
             colorScheme = lightColorScheme(
                 primary = Color(palette.ink), onPrimary = Color(palette.paper),

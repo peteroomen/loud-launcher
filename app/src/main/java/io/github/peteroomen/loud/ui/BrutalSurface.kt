@@ -38,11 +38,12 @@ fun BrutalSurface(
     modifier: Modifier = Modifier,
     fill: Color = Color(LocalLoud.current.palette.paper),
     onClick: (() -> Unit)? = null,
-    haptics: Boolean = true,
+    haptics: Boolean = LocalLoudHaptics.current,
     motion: Boolean = true,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val style = LocalLoud.current
+    val shadow = if (LocalLoudDecorations.current) style.shadow else 0.dp
     val source = remember { MutableInteractionSource() }
     val pressed by source.collectIsPressedAsState()
     val displacement by animateFloatAsState(if (pressed) 1f else 0f, if (motion) tween(90) else snap(), label = "tile press")
@@ -53,10 +54,10 @@ fun BrutalSurface(
     }
     CompositionLocalProvider(LocalContentColor provides Color(style.palette.ink)) {
         Column(
-            modifier.padding(end = style.shadow, bottom = style.shadow)
+            modifier.padding(end = shadow, bottom = shadow)
                 .heightIn(min = if (onClick != null) 48.dp else 0.dp)
-                .graphicsLayer { translationX = style.shadow.toPx() * displacement; translationY = style.shadow.toPx() * displacement }
-                .brutalShadow(style.corners, Color(style.palette.line), style.shadow * (1f - displacement))
+                .graphicsLayer { translationX = shadow.toPx() * displacement; translationY = shadow.toPx() * displacement }
+                .brutalShadow(style.corners, Color(style.palette.line), shadow * (1f - displacement))
                 .clip(style.corners).background(fill).border(style.stroke, Color(style.palette.line), style.corners)
                 .then(clickable).padding(14.dp),
             content = content,

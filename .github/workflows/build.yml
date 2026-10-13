@@ -23,6 +23,11 @@ jobs:
         run: |
           echo "$DEBUG_KEYSTORE" | base64 -d > "$RUNNER_TEMP/debug.keystore"
           echo "DEBUG_KEYSTORE_FILE=$RUNNER_TEMP/debug.keystore" >> "$GITHUB_ENV"
+      - name: Explain release signing requirement
+        if: env.DEBUG_KEYSTORE == ''
+        run: |
+          echo "### Debug artifact only" >> "$GITHUB_STEP_SUMMARY"
+          echo "To enable stable APK releases for Obtainium, add the existing shared DEBUG_KEYSTORE_BASE64 as a repository Actions secret, then rerun this workflow on main. Do not substitute a new signing key for an installed build." >> "$GITHUB_STEP_SUMMARY"
       - run: ./gradlew testDebugUnitTest lintDebug assembleDebug
       - name: Check stable signing identity
         if: env.DEBUG_KEYSTORE != ''
@@ -30,10 +35,10 @@ jobs:
           apksigner="$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -1)apksigner"
           "$apksigner" verify --print-certs app/build/outputs/apk/debug/app-debug.apk | tee certs.txt
           grep -qi "SHA-256 digest: 5b6973b159eafc40f5509ae8f4dcf0125a66110236303319ee7f6c73778deae1" certs.txt
-      - run: cp app/build/outputs/apk/debug/app-debug.apk loud-0.1.${{ github.run_number }}.apk
+      - run: cp app/build/outputs/apk/debug/app-debug.apk loud-0.2.${{ github.run_number }}.apk
       - uses: actions/upload-artifact@v4
         with:
-          name: loud-preview
+          name: loud-debug
           path: loud-*.apk
       - uses: actions/upload-artifact@v4
         if: always()
@@ -44,7 +49,7 @@ jobs:
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && env.DEBUG_KEYSTORE != ''
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v0.1.${{ github.run_number }}
-          name: Loud preview 0.1.${{ github.run_number }}
-          body: Phase 1 design review. Sample data only; not registered as HOME yet.
-          files: loud-0.1.${{ github.run_number }}.apk
+          tag_name: v0.2.${{ github.run_number }}
+          name: Loud 0.2.${{ github.run_number }}
+          body: Built from ${{ github.sha }}. Android 12+ launcher; updates require the same signing certificate.
+          files: loud-0.2.${{ github.run_number }}.apk
