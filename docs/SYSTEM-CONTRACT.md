@@ -25,3 +25,5 @@ Manifest: INTERNET, ACCESS_NETWORK_STATE, READ_CALENDAR, ACCESS_COARSE_LOCATION,
 Only Open-Meteo weather/geocoding network initially. SharedPreferences weather cache, last-success timestamp, honest loading/error/offline state, no sample fallback. Unique periodic WorkManager45min with network constraint; actual OS timing varies. Automatic checks rate limited30min including failed attempts; explicit user refresh can override. City changes discard old-city in-flight results. Worker reports failure if forecast/cache inaccessible.
 
 Verified app package primary sources: [Claude publisher listing](https://play.google.com/store/apps/details?id=com.anthropic.claude), [OpenAI publisher listing](https://play.google.com/store/apps/details?id=com.openai.chatgpt), [GitHub publisher listing](https://play.google.com/store/apps/details?id=com.github.android).
+
+webSearch trims empty queries (false), opens encoded Google search in Chrome first, then generic capable browser, then ACTION_WEB_SEARCH. Weather configuration is one shared device provider preference; tile editors should display system.weather.place, not stale copies in tile config.

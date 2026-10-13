@@ -23,7 +23,14 @@ object SystemActions {
     fun openCalendarEvent(context: Context, event: CalendarEvent) = start(context, Intent(Intent.ACTION_VIEW, CalendarContract.Events.CONTENT_URI.buildUpon().appendPath(event.id.toString()).build()).putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, event.start.toEpochMilli()).putExtra(CalendarContract.EXTRA_EVENT_END_TIME, event.end.toEpochMilli()))
     fun openApp(context: Context, packageName: String): Boolean = context.packageManager.getLaunchIntentForPackage(packageName)?.let { start(context, it) } ?: false
     fun openWeb(context: Context, url: String): Boolean { val uri = Uri.parse(url); return if (uri.scheme == "https" || uri.scheme == "http") start(context, Intent(Intent.ACTION_VIEW, uri)) else false }
-    fun webSearch(context: Context, query: String) = start(context, Intent(Intent.ACTION_WEB_SEARCH).putExtra(SearchManager.QUERY, query))
+    fun webSearch(context: Context, query: String): Boolean {
+        val trimmed = query.trim()
+        if (trimmed.isEmpty()) return false
+        val url = Uri.parse("https://www.google.com/search?q=${Uri.encode(trimmed)}")
+        return start(context, Intent(Intent.ACTION_VIEW, url).setPackage("com.android.chrome")) ||
+            start(context, Intent(Intent.ACTION_VIEW, url)) ||
+            start(context, Intent(Intent.ACTION_WEB_SEARCH).putExtra(SearchManager.QUERY, trimmed))
+    }
     fun openNotificationSettings(context: Context) = start(context, Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
     fun openUsageSettings(context: Context) = start(context, Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
     fun openAppSettings(context: Context) = start(context, Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", context.packageName, null)))

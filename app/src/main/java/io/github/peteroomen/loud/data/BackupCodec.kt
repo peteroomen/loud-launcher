@@ -8,7 +8,7 @@ data class LauncherBackup(val settings: LauncherSettings,val tiles: List<HomeTil
 object BackupCodec {
     const val VERSION=1
     private val palettes=setOf("Taxi","Riso","Acid","Night Brutal","Candy")
-    private val configKeys=setOf("appId","text","url","title","urls","city","latitude","longitude","minutes","checked","widgetId","provider","profileSerial","deadline","remainingSeconds")
+    private val configKeys=setOf("appId","text","url","title","urls","city","latitude","longitude","minutes","checked","widgetId","provider","profileSerial","deadline","remainingSeconds","minWidthDp","minHeightDp")
     private fun validateId(id: String) { require(id.isNotBlank() && id.length<=512 && id.none { it.isISOControl() }) { "Invalid ID" } }
     fun validateSettings(s: LauncherSettings) {
         require(s.palette in palettes) { "Unknown palette" }; require(s.gridColumns in 2..4)
@@ -24,6 +24,7 @@ object BackupCodec {
             t.color?.let { require(it in 0..0xFFFFFFFFL) }; require(t.config.size<=20 && t.config.keys.all { it in configKeys }) { "Unknown tile configuration" }
             t.config.values.forEach { require(it.length<=16384) }
             t.config["url"]?.let(::validateUrl); t.config["urls"]?.lineSequence()?.filter { it.isNotBlank() }?.forEach(::validateUrl)
+            listOf("minWidthDp","minHeightDp").forEach { key -> t.config[key]?.let { require((it.toIntOrNull() ?: -1) in 0..4096) } }
             t.config["widgetId"]?.let { require((it.toIntOrNull() ?: -1)>0) }
             t.config["profileSerial"]?.let { require((it.toLongOrNull() ?: -1)>=0) }
             t.config["minutes"]?.let { require((it.toIntOrNull() ?: -1) in 1..1440) }
