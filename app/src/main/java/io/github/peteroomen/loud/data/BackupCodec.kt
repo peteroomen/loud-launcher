@@ -3,6 +3,7 @@ import io.github.peteroomen.loud.model.*
 import org.json.JSONArray
 import org.json.JSONObject
 import java.net.URI
+import java.net.URLDecoder
 
 data class LauncherBackup(val settings: LauncherSettings,val tiles: List<HomeTile>,val history: Map<String,LaunchStats>,val webHistory: List<WebVisit> = emptyList())
 object BackupCodec {
@@ -37,7 +38,7 @@ object BackupCodec {
     fun validateUrl(value: String) {
         val uri=URI(value)
         require(value.length<=4096 && uri.scheme?.lowercase() in setOf("http","https") && !uri.host.isNullOrBlank() && uri.userInfo==null) { "Only public HTTP(S) links supported" }
-        require(uri.rawQuery.orEmpty().lowercase().split('&').none { it.substringBefore('=') in setOf("token","access_token","refresh_token","api_key","apikey","authorization") }) { "Links must not contain authentication tokens" }
+        require(listOf(uri.rawQuery.orEmpty(),uri.rawFragment.orEmpty()).all { params -> params.split('&').none { URLDecoder.decode(it.substringBefore('='),"UTF-8").lowercase() in setOf("token","access_token","refresh_token","api_key","apikey","authorization") } }) { "Links must not contain authentication tokens" }
     }
     fun encodeSettings(s: LauncherSettings): String {
         validateSettings(s)

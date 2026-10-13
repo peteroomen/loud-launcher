@@ -8,6 +8,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 class IconCache internal constructor(private val context: Context,private val apps: AppRepository) {
+    val generation: kotlinx.coroutines.flow.StateFlow<Long> = apps.iconGeneration
     private val mutex=Mutex()
     private val cache=object: LruCache<String,Bitmap>(16*1024*1024) { override fun sizeOf(key: String,value: Bitmap)=value.byteCount }
     private fun key(id: String,size: Int)="${apps.iconGeneration.value}:$id@$size"

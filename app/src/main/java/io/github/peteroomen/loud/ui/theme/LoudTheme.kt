@@ -2,6 +2,7 @@ package io.github.peteroomen.loud.ui.theme
 
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Shapes
 import androidx.compose.material3.Typography
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
@@ -37,6 +38,13 @@ fun LoudTheme(palette: LoudPalette = LoudPalettes.Taxi, shape: LoudShape = LoudS
                 background = Color(palette.canvas), onBackground = Color(palette.onCanvas),
                 surface = Color(palette.paper), onSurface = Color(palette.ink),
                 secondaryContainer = Color(palette.yellow), onSecondaryContainer = Color(palette.ink),
+            ),
+            shapes = Shapes(
+                extraSmall = RoundedCornerShape(if(shape == LoudShape.Round) 6.dp else 0.dp),
+                small = RoundedCornerShape(if(shape == LoudShape.Round) 12.dp else 0.dp),
+                medium = RoundedCornerShape(if(shape == LoudShape.Round) 19.dp else 0.dp),
+                large = RoundedCornerShape(if(shape == LoudShape.Round) 24.dp else 0.dp),
+                extraLarge = RoundedCornerShape(if(shape == LoudShape.Round) 28.dp else 0.dp),
             ),
             typography = Typography(
                 bodyLarge = TextStyle(fontFamily = BodyFont, fontSize = 16.sp),

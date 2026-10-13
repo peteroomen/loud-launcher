@@ -66,6 +66,7 @@ internal object WeatherStorage {
             }.onFailure { failure ->
                 if (read(context).place == old.place) p.edit().putBoolean("offline", !online(context) || failure is java.io.IOException).putString("error", "Weather unavailable. Try again later.").apply()
             }
+            if (read(context).place.usesLocation && context.checkSelfPermission(android.Manifest.permission.ACCESS_COARSE_LOCATION) != android.content.pm.PackageManager.PERMISSION_GRANTED) select(context, WeatherPlace.HAMILTON)
             read(context)
         }
     }

@@ -59,6 +59,7 @@ class SystemRepository(context: Context) : DefaultLifecycleObserver, Closeable {
     private var started = false
     private var closed = false
     private var calendarObserving = false
+    private var lastRebindAt = -30000L
     private var calendarJob: Job? = null
     private var usageJob: Job? = null
     private var weatherJob: Job? = null
@@ -114,6 +115,10 @@ class SystemRepository(context: Context) : DefaultLifecycleObserver, Closeable {
         val notificationAccess = app.getSystemService(NotificationManager::class.java).isNotificationListenerAccessGranted(ComponentName(app, LoudNotificationListener::class.java))
         mutablePermissions.value = PermissionState(allowed(Manifest.permission.READ_CALENDAR), notificationAccess, usageAllowed(), allowed(Manifest.permission.ACCESS_COARSE_LOCATION), SystemActions.powerBubbleAvailable(app))
         if (!notificationAccess) NotificationStateSource.clear()
+        else if (!notifications.value.connected && android.os.SystemClock.elapsedRealtime() - lastRebindAt >= 30000) {
+            lastRebindAt = android.os.SystemClock.elapsedRealtime()
+            runCatching { android.service.notification.NotificationListenerService.requestRebind(ComponentName(app, LoudNotificationListener::class.java)) }
+        }
         if (!mutablePermissions.value.calendar) {
             calendarJob?.cancel(); mutableCalendar.value = CalendarState(month = mutableCalendar.value.month)
             if (calendarObserving) { runCatching { app.contentResolver.unregisterContentObserver(calendarObserver) }; calendarObserving = false }

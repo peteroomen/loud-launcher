@@ -48,6 +48,7 @@ import io.github.peteroomen.loud.ui.theme.*
 import io.github.peteroomen.loud.widget.WidgetHostController
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import kotlin.math.abs
@@ -65,7 +66,7 @@ fun LoudLauncherApp(vm: LauncherViewModel,widgets: WidgetHostController) {
     val palette=LoudPalettes.all.firstOrNull {it.name==settings.palette} ?: LoudPalettes.Taxi
     val shape=if(settings.shape==AppearanceShape.Round) LoudShape.Round else LoudShape.Square
     val snackbar=remember {SnackbarHostState()}
-    fun reconcileWidgets() {widgets.reconcileWidgets(vm.core.layout.tiles.value.mapNotNull {it.config["widgetId"]?.toIntOrNull()}.toSet())}
+    suspend fun reconcileWidgets() {widgets.reconcileWidgets(vm.core.layout.persistedTiles().mapNotNull {it.config["widgetId"]?.toIntOrNull()}.toSet())}
     val permissions=rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {vm.system.refresh()}
     val wallpaper=rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) {uri ->
         if(uri!=null) runCatching {context.contentResolver.takePersistableUriPermission(uri,Intent.FLAG_GRANT_READ_URI_PERMISSION)}.onSuccess {vm.settings {it.copy(wallpaperUri=uri.toString())}}.onFailure {vm.report("Wallpaper permission could not be kept. Choose another image.")}
@@ -169,7 +170,8 @@ fun LoudLauncherApp(vm: LauncherViewModel,widgets: WidgetHostController) {
 
 @Composable fun AppIcon(app: AppEntry,vm: LauncherViewModel,modifier: Modifier=Modifier.size(42.dp)) {
     val pixels=with(LocalDensity.current) {48.dp.roundToPx()}
-    val icon by produceState(vm.core.icons.cached(app.id,pixels),app.id,pixels) {value=vm.core.icons.load(app,pixels)}
+    val generation by vm.core.icons.generation.collectAsStateWithLifecycle()
+    val icon by produceState(vm.core.icons.cached(app.id,pixels),app.id,pixels,generation) {value=vm.core.icons.load(app,pixels)}
     if(icon!=null) Image(icon!!.asImageBitmap(),null,modifier) else Box(modifier,contentAlignment=Alignment.Center) {Text(app.label.take(1),fontSize=24.sp,fontWeight=FontWeight.Bold)}
 }
 

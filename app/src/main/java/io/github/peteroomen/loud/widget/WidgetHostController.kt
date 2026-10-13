@@ -44,6 +44,7 @@ class WidgetHostController(private val activity: Activity) {
         override fun onProviderChanged(appWidgetId: Int, appWidget: AppWidgetProviderInfo) {
             super.onProviderChanged(appWidgetId, appWidget); revision++
         }
+        override fun onProvidersChanged() { super.onProvidersChanged(); revision++ }
     }
     internal var revision by mutableIntStateOf(0)
         private set
@@ -88,6 +89,10 @@ class WidgetHostController(private val activity: Activity) {
 
     @Suppress("DEPRECATION")
     fun beginAdd(provider: WidgetProvider, widthDp: Int = 280, heightDp: Int = 180) {
+        if (provider.minWidthDp > MAX_CONTENT_DP || provider.minHeightDp > MAX_CONTENT_DP) {
+            onMessage("This widget requires an unusually large area (${provider.minWidthDp} × ${provider.minHeightDp} dp). Choose another widget provider.")
+            return
+        }
         if (pendingId != AppWidgetManager.INVALID_APPWIDGET_ID) {
             onMessage("Finish or cancel the widget you are already adding."); return
         }
@@ -101,7 +106,8 @@ class WidgetHostController(private val activity: Activity) {
             if (!recorded) {
                 host.deleteAppWidgetId(id); clearPending(); onMessage("Widget setup could not be saved. Try again."); return
             }
-            val options = sizeOptions(maxOf(widthDp, provider.minWidthDp), maxOf(heightDp, provider.minHeightDp))
+            val options = sizeOptions(maxOf(widthDp, provider.minWidthDp).coerceAtMost(MAX_CONTENT_DP),
+                maxOf(heightDp, provider.minHeightDp).coerceAtMost(MAX_CONTENT_DP))
             if (manager.bindAppWidgetIdIfAllowed(id, provider.info.profile, provider.info.provider, options)) configurePending()
             else activity.startActivityForResult(Intent(AppWidgetManager.ACTION_APPWIDGET_BIND).apply {
                 putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, id)
@@ -155,7 +161,8 @@ class WidgetHostController(private val activity: Activity) {
     /** Recover only after Room is loaded; deduplicate by widgetId before adding a tile. */
     fun pendingReady(): WidgetSelection? = if (pendingStage == READY && pendingId != AppWidgetManager.INVALID_APPWIDGET_ID) {
         WidgetSelection(pendingId, prefs.getString("provider", "").orEmpty(), prefs.getLong("profile", -1),
-            prefs.getString("label", "Widget").orEmpty(), prefs.getInt("min_width", 1), prefs.getInt("min_height", 1))
+            prefs.getString("label", "Widget").orEmpty(), prefs.getInt("min_width", 1).coerceIn(1, MAX_CONTENT_DP),
+            prefs.getInt("min_height", 1).coerceIn(1, MAX_CONTENT_DP))
     } else null
 
     fun confirmPersisted(appWidgetId: Int) {
@@ -221,6 +228,7 @@ class WidgetHostController(private val activity: Activity) {
         const val REQUEST_BIND = 6101
         const val REQUEST_CONFIGURE = 6102
         const val REQUEST_RECONFIGURE = 6103
+        const val MAX_CONTENT_DP = 4096
         private const val BIND = "bind"
         private const val CONFIGURE = "configure"
         private const val READY = "ready"

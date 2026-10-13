@@ -27,3 +27,5 @@ Only Open-Meteo weather/geocoding network initially. SharedPreferences weather c
 Verified app package primary sources: [Claude publisher listing](https://play.google.com/store/apps/details?id=com.anthropic.claude), [OpenAI publisher listing](https://play.google.com/store/apps/details?id=com.openai.chatgpt), [GitHub publisher listing](https://play.google.com/store/apps/details?id=com.github.android).
 
 webSearch trims empty queries (false), opens encoded Google search in Chrome first, then generic capable browser, then ACTION_WEB_SEARCH. Weather configuration is one shared device provider preference; tile editors should display system.weather.place, not stale copies in tile config.
+
+refresh() requests a supported listener rebind when access is granted but service disconnected, limited to once30sec. Media UI should show listener connecting/unavailable separately from no active player. All-day agenda future filtering compares exclusive UTC end-date to today's device date.

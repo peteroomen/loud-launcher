@@ -21,11 +21,12 @@ import kotlinx.coroutines.flow.Flow
     @Query("DELETE FROM tiles") suspend fun clearTiles()
     @Insert(onConflict=OnConflictStrategy.REPLACE) suspend fun putHistory(value: HistoryEntity)
     @Insert(onConflict=OnConflictStrategy.REPLACE) suspend fun putHistory(values: List<HistoryEntity>)
+    @Query("DELETE FROM launch_history WHERE appId NOT IN (SELECT appId FROM launch_history ORDER BY lastOpened DESC LIMIT 10000)") suspend fun pruneHistory()
     @Query("DELETE FROM launch_history") suspend fun clearHistory()
     @Insert(onConflict=OnConflictStrategy.REPLACE) suspend fun putWeb(value: WebEntity)
     @Insert(onConflict=OnConflictStrategy.REPLACE) suspend fun putWeb(values: List<WebEntity>)
     @Query("DELETE FROM web_history") suspend fun clearWeb()
     @Query("DELETE FROM web_history WHERE url NOT IN (SELECT url FROM web_history ORDER BY lastOpened DESC LIMIT 200)") suspend fun pruneWeb()
 }
-@Database(entities=[TileEntity::class,HistoryEntity::class,WebEntity::class,MetaEntity::class],version=1,exportSchema=false)
+@Database(entities=[TileEntity::class,HistoryEntity::class,WebEntity::class,MetaEntity::class],version=1,exportSchema=true)
 internal abstract class LauncherDatabase: RoomDatabase() { abstract fun dao(): LauncherDao }

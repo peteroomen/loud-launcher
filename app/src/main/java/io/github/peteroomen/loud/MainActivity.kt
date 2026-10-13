@@ -13,6 +13,7 @@ import io.github.peteroomen.loud.ui.LoudLauncherApp
 import io.github.peteroomen.loud.widget.WidgetHostController
 import io.github.peteroomen.loud.widget.WidgetSelection
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -26,7 +27,7 @@ class MainActivity : ComponentActivity() {
         widgets=WidgetHostController(this).apply {onMessage=launcher::report;onWidgetReady=::saveWidget}
         lifecycleScope.launch {
             launcher.core.layout.loaded.first {it}
-            widgets.reconcileWidgets(launcher.core.layout.tiles.value.mapNotNull {it.config["widgetId"]?.toIntOrNull()}.toSet())
+            widgets.reconcileWidgets(launcher.core.layout.persistedTiles().mapNotNull {it.config["widgetId"]?.toIntOrNull()}.toSet())
             widgets.pendingReady()?.let(::saveWidget)
         }
         setContent {LoudLauncherApp(launcher,widgets)}
@@ -36,13 +37,13 @@ class MainActivity : ComponentActivity() {
         lifecycleScope.launch {
             try {
                 launcher.core.layout.loaded.first {it}
-                if(launcher.core.layout.tiles.value.none {it.config["widgetId"]==selection.appWidgetId.toString()}) {
-                    val provider=widgets.installedProviders().providers.firstOrNull {it.providerComponent==selection.providerComponent && it.profileSerial==selection.profileSerial}
-                    val rows=((provider?.minHeightDp ?: 180)+93)/94
-                    launcher.core.layout.add(HomeTile(kind=HomeTileKind.Widget,columns=4,rows=rows.coerceIn(1,4),config=selection.toTileConfig()))
+                if(launcher.core.layout.persistedTiles().none {it.config["widgetId"]==selection.appWidgetId.toString()}) {
+                    val rows=(selection.minHeightDp+93)/94
+                    launcher.core.layout.addWidgetIfMissing(HomeTile(kind=HomeTileKind.Widget,columns=4,rows=rows.coerceIn(1,4),config=selection.toTileConfig()),selection.appWidgetId)
                 }
                 widgets.confirmPersisted(selection.appWidgetId)
-            } catch(e: Exception) {widgets.cancelPending();launcher.report(e.message ?: "Widget could not save")}
+            } catch(e: CancellationException) {throw e}
+            catch(e: Exception) {widgets.cancelPending();launcher.report(e.message ?: "Widget could not save")}
             finally {savingWidgets.remove(selection.appWidgetId)}
         }
     }

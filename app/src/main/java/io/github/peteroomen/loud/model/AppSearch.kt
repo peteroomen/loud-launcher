@@ -7,6 +7,7 @@ import kotlin.math.ln
 object AppSearch {
     private fun normalized(value: String) = Normalizer.normalize(value,Normalizer.Form.NFD).replace("\\p{M}+".toRegex(),"").lowercase(Locale.ROOT).trim()
     fun rank(apps: List<SearchApp>, query: String, preferences: AppPreferences, history: Map<String,LaunchStats> = emptyMap(), now: Long = System.currentTimeMillis()): List<SearchApp> {
+        if(query.length > 200) return emptyList()
         val q = normalized(query)
         return apps.asSequence().filter { it.id !in preferences.hiddenIds || q.length >= 2 }.mapNotNull { app ->
             val name = normalized(preferences.displayName(app.id,app.label))

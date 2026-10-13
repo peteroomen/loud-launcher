@@ -97,7 +97,7 @@ object MediaState {
 
     fun togglePlayPause() {
         val c = controller ?: return
-        runCatching { if (c.playbackState?.state == PlaybackState.STATE_PLAYING) c.transportControls.pause() else c.transportControls.play() }
+        runCatching { if (c.isPlaying()) c.transportControls.pause() else c.transportControls.play() }
     }
 
     fun skipNext() {
@@ -177,7 +177,7 @@ object MediaState {
             packageName = c.packageName,
             durationMs = meta.getLong(MediaMetadata.METADATA_KEY_DURATION),
             positionMs = state?.position ?: -1,
-            positionAt = state?.lastPositionUpdateTime ?: SystemClock.elapsedRealtime(),
+            positionAt = state?.lastPositionUpdateTime?.takeIf { it > 0 } ?: SystemClock.elapsedRealtime(),
             speed = state?.playbackSpeed ?: 1f,
         )
     }

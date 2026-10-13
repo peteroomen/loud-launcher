@@ -4,6 +4,9 @@ on:
     branches: [main, "build/**"]
   pull_request:
   workflow_dispatch:
+concurrency:
+  group: loud-build-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   build:
     runs-on: ubuntu-latest
