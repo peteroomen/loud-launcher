@@ -16,6 +16,12 @@ The native gallery includes appearance, tile resizing/recolouring samples, permi
 
 The review bundle contains `loud-preview.apk`, `preview/index.html` and the source project. The APK uses a local debug signing key; moving to a future stable CI signing key may require uninstalling this review build first. It never registers as HOME or replaces Niagara.
 
+## Obtainium and stable updates
+
+Use `https://github.com/peteroomen/loud-launcher` as the Obtainium source URL. Updates become available after a successful GitHub Release containing a signed APK.
+
+In repository **Settings → Secrets and variables → Actions**, add `DEBUG_KEYSTORE_BASE64` using the existing shared keystore used by Niagara/Power Bubble, then run **Build → Run workflow** on `main`. The workflow verifies its expected signing certificate before publishing. Without this secret, CI uploads a review APK artifact and explains the missing secret in its job summary; it does not publish a release. Reuse the same key to update an existing installation. Keep the key out of the repository.
+
 ## Build
 
 Android 12+; compile/target SDK 36; Kotlin 2.2.20; Gradle 8.14.3; AGP 8.13.0; Compose BOM 2025.09.00. Mirrors `peteroomen/niagara-like-launcher`.
