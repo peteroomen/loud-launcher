@@ -1,6 +1,7 @@
 package io.github.peteroomen.loud.ui.theme
 
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.Typography
@@ -31,12 +32,13 @@ val LocalLoudDecorations = staticCompositionLocalOf { true }
 val LocalLoud = staticCompositionLocalOf { LoudStyle(LoudPalettes.Taxi, LoudShape.Square) }
 @Composable
 fun LoudTheme(palette: LoudPalette = LoudPalettes.Taxi, shape: LoudShape = LoudShape.Square, haptics: Boolean = true, decorations: Boolean = true, content: @Composable () -> Unit) {
-    CompositionLocalProvider(LocalLoud provides LoudStyle(palette, shape), LocalLoudHaptics provides haptics, LocalLoudDecorations provides decorations) {
+    CompositionLocalProvider(LocalLoud provides LoudStyle(palette, shape), LocalLoudHaptics provides haptics, LocalLoudDecorations provides decorations, LocalContentColor provides Color(palette.onCanvas)) {
         MaterialTheme(
             colorScheme = lightColorScheme(
-                primary = Color(palette.ink), onPrimary = Color(palette.paper),
+                primary = Color(palette.onCanvas), onPrimary = Color(palette.canvas),
                 background = Color(palette.canvas), onBackground = Color(palette.onCanvas),
-                surface = Color(palette.paper), onSurface = Color(palette.ink),
+                surface = Color(if(palette == LoudPalettes.Night) palette.canvas else palette.paper), onSurface = Color(palette.onCanvas),
+                onSurfaceVariant = Color(palette.onCanvas), outline = Color(palette.onCanvas),
                 secondaryContainer = Color(palette.yellow), onSecondaryContainer = Color(palette.ink),
             ),
             shapes = Shapes(

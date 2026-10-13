@@ -65,6 +65,7 @@ object BackupCodec {
     }
     fun decode(json: String): LauncherBackup {
         require(json.toByteArray(Charsets.UTF_8).size<=2_000_000) { "Backup exceeds 2MB" }
+        validateJsonDepth(json)
         val o=JSONObject(json); keys(o,setOf("version","settings","tiles","history","webHistory")); require(int(o,"version")==VERSION) { "Unsupported backup version" }
         val s=decodeSettings(o.getJSONObject("settings").toString()); val ta=o.getJSONArray("tiles"); require(ta.length()<=300)
         val t=(0 until ta.length()).map { i -> val x=ta.getJSONObject(i); keys(x,setOf("id","kind","columns","rows","color","config")); HomeTile(x.getString("id"),HomeTileKind.valueOf(x.getString("kind")),int(x,"columns"),int(x,"rows"),if(x.isNull("color")) null else long(x,"color"),decodeConfig(x.getJSONObject("config").toString())) }; validateTiles(t)
@@ -73,6 +74,19 @@ object BackupCodec {
         val wa=o.optJSONArray("webHistory") ?: JSONArray(); require(wa.length()<=200)
         val w=(0 until wa.length()).map { i -> val x=wa.getJSONObject(i); keys(x,setOf("url","title","count","lastOpened")); WebVisit(x.getString("url"),x.getString("title"),long(x,"count"),long(x,"lastOpened")) }; validateWeb(w)
         return LauncherBackup(s.copy(wallpaperUri=null),t.filter { it.kind!=HomeTileKind.Widget },h,w)
+    }
+    private fun validateJsonDepth(json: String) {
+        var depth=0; var inString=false; var escaped=false
+        for(c in json) {
+            if(inString) {
+                if(escaped) escaped=false else if(c=='\\') escaped=true else if(c=='"') inString=false
+            } else when(c) {
+                '"' -> inString=true
+                '{','[' -> { depth++; require(depth<=16) { "Backup nesting exceeds limit" } }
+                '}',']' -> { depth--; require(depth>=0) { "Malformed backup nesting" } }
+            }
+        }
+        require(depth==0 && !inString) { "Malformed backup nesting" }
     }
     private fun keys(o: JSONObject,allowed: Set<String>) { require(o.keys().asSequence().all { it in allowed }) { "Unknown backup fields" } }
     private fun long(o: JSONObject,key: String): Long { val n=o.get(key); require(n is Int || n is Long) { "$key must be integer" }; return (n as Number).toLong() }

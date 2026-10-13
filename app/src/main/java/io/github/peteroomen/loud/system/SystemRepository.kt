@@ -192,7 +192,7 @@ class SystemRepository(context: Context) : DefaultLifecycleObserver, Closeable {
     }
     fun useCoarseLocation(): Boolean {
         refreshPermissions()
-        if (!mutablePermissions.value.coarseLocation || !started) return false
+        if (!started || app.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) return false
         val manager = app.getSystemService(LocationManager::class.java)
         if (!runCatching { manager.isProviderEnabled(LocationManager.NETWORK_PROVIDER) }.getOrDefault(false)) return false
         locationCancellation?.cancel()

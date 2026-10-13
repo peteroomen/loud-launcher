@@ -14,6 +14,8 @@ Use LayoutRepository.addWidgetIfMissing(tile,widgetId) for atomic dedup across a
 
 Pending ID/stage are saved before leaving Loud; READY is retained until Room save succeeds. After layout.loaded becomes true, reconcile once using actual persisted widget IDs, then recover pendingReady and deduplicate by widgetId before adding. Never reconcile using a transient loading empty list. Cancel unfinished addition action belongs in picker for OEM-discarded results after process death; do not cancel on ordinary rotation or backgrounding.
 
+Enable the picker cancellation action only while hasUnfinishedSetup() is true (BIND/CONFIGURE). READY may be inside an asynchronous Room save and must not be deleted by manual cancellation. cancelPending() is still used after a definite save failure.
+
 Render HostedWidget(controller,id,Modifier.fillMaxWidth().height(tileHeight)) inside themed tile frame. Real AppWidgetHostView updates provider size options using measured dp content dimensions. RemoteViews keep provider appearance. Missing providers explain enable app/profile or re-add. Await Room tile removal before deleteWidget. After successful import/reset, reconcile against replacement persisted IDs; orphan cleanup recovers interrupted deletions. Reconfigure cancellation keeps the existing widget.
 
 Build: ./gradlew :app:assembleDebug :app:testDebugUnitTest :app:lintDebug. On-device acceptance: consent allow/deny; setup complete/cancel; rotate during setup; process death READY recovery; resize/remove; uninstall provider; quiet/disabled work profile; reconfigure. Google Calendar and OEM/profile behavior require an Android device. Teams provider presence is discovered, not assumed.

@@ -169,6 +169,9 @@ class WidgetHostController(private val activity: Activity) {
         if (pendingId == appWidgetId && pendingStage == READY) clearPending()
     }
 
+    /** User cancellation is offered only before persistence; READY may be saving in Room. */
+    fun hasUnfinishedSetup(): Boolean = pendingStage == BIND || pendingStage == CONFIGURE
+
     fun cancelPending() {
         if (pendingId != AppWidgetManager.INVALID_APPWIDGET_ID) deleteWidget(pendingId)
         clearPending()

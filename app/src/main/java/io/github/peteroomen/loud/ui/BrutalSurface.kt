@@ -9,6 +9,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -53,6 +54,7 @@ fun BrutalSurface(
         onClick()
     }
     CompositionLocalProvider(LocalContentColor provides Color(style.palette.ink)) {
+        MaterialTheme(colorScheme = MaterialTheme.colorScheme.copy(primary=Color(style.palette.ink), onPrimary=Color(style.palette.paper), surface=Color(style.palette.paper), onSurface=Color(style.palette.ink), onSurfaceVariant=Color(style.palette.ink), outline=Color(style.palette.ink))) {
         Column(
             modifier.padding(end = shadow, bottom = shadow)
                 .heightIn(min = if (onClick != null) 48.dp else 0.dp)
@@ -62,6 +64,7 @@ fun BrutalSurface(
                 .then(clickable).padding(14.dp),
             content = content,
         )
+        }
     }
 }
 

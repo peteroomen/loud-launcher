@@ -16,7 +16,7 @@ class SettingsRepository internal constructor(context: Context,private val mutex
     val settings: StateFlow<LauncherSettings> = state.asStateFlow()
     internal suspend fun initialize() { state.value=store.data.first()[key]?.let { BackupCodec.decodeSettings(it) } ?: LauncherSettings() }
     internal suspend fun replace(value: LauncherSettings) { val json=BackupCodec.encodeSettings(value); store.edit { it[key]=json }; state.value=value }
-    suspend fun update(transform: (LauncherSettings)->LauncherSettings) { ready.await(); mutex.withLock { replace(transform(state.value)) } }
+    suspend fun update(transform: (LauncherSettings)->LauncherSettings) { ready.await(); mutex.withLock { withContext(NonCancellable) { replace(transform(state.value)) } } }
     suspend fun renameApp(id: String,name: String?)=update { old -> val names=old.appPreferences.renames.toMutableMap(); if(name.isNullOrBlank()) names.remove(id) else names[id]=name.trim(); old.copy(appPreferences=old.appPreferences.copy(renames=names)) }
     suspend fun hideApp(id: String,hidden: Boolean)=update { old -> old.copy(appPreferences=old.appPreferences.copy(hiddenIds=if(hidden) old.appPreferences.hiddenIds+id else old.appPreferences.hiddenIds-id)) }
 }

@@ -44,5 +44,6 @@ class CoreTest {
         assertThrows(IllegalArgumentException::class.java) { BackupCodec.decode(o.toString()) }
         assertThrows(IllegalArgumentException::class.java) { BackupCodec.decode(" ".repeat(2_000_001)) }
     }
+    @Test fun deeplyNestedMalformedInputIsRejectedWithoutParsing() { assertThrows(IllegalArgumentException::class.java) { BackupCodec.decode("[".repeat(1000) + "]".repeat(1000)) } }
     @Test fun roundDefaultIndependentOfPaletteAndNoteEmpty() { assertEquals(AppearanceShape.Round,LauncherSettings(palette="Night Brutal").shape); assertEquals("",defaultTiles().first { it.kind==HomeTileKind.Note }.config["text"]) }
 }

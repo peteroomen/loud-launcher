@@ -18,6 +18,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -73,7 +75,7 @@ import kotlin.math.ceil
         if(catalog==null) Text("Finding widget providers…")
         catalog?.message?.let {Text(it,fontSize=14.sp)}
         catalog?.providers?.forEach {provider->TextButton({host?.beginAdd(provider,maxOf(280,provider.minWidthDp),maxOf(180,provider.minHeightDp));dismiss()},Modifier.fillMaxWidth()) {Column(Modifier.fillMaxWidth()) {Text(provider.label,fontWeight=FontWeight.Bold);Text("${provider.appLabel} · ${provider.profileLabel}",fontSize=12.sp);Text("Minimum ${provider.minWidthDp} × ${provider.minHeightDp} dp",fontSize=11.sp)}}}
-        TextButton({host?.cancelPending();vm.report("Unfinished widget addition cancelled")}) {Text("Cancel unfinished addition")}
+        TextButton({host?.cancelPending();vm.report("Unfinished widget addition cancelled");dismiss()},enabled=host?.hasUnfinishedSetup()==true) {Text("Cancel unfinished addition")}
     }},confirmButton={TextButton(dismiss) {Text("Close")}})
 }
 
@@ -98,7 +100,7 @@ import kotlin.math.ceil
         Row(horizontalArrangement=Arrangement.spacedBy(6.dp)) {(minimumRows..4).forEach {n->BrutalButton("$n",Modifier.weight(1f),rows==n) {rows=n}}}
         if(tile.kind==HomeTileKind.Widget) Text("Android widget minimum: ${tile.config["minWidthDp"] ?: "1"} × ${tile.config["minHeightDp"] ?: "1"} dp. Provider colours are kept.",fontSize=12.sp)
         Text("Tile colour",fontWeight=FontWeight.Bold)
-        FlowRow(horizontalArrangement=Arrangement.spacedBy(4.dp)) {listOf<Long?>(null,p.yellow,p.cyan,p.pink,p.paper).forEachIndexed {index,fill->Box(Modifier.size(48.dp).background(Color(fill ?: p.canvas)).clickable {color=fill},contentAlignment=Alignment.Center) {if(color==fill) Icon(Icons.Default.Check,"Selected colour") else if(index==0) Text("Auto",fontSize=11.sp)}}}
+        FlowRow(horizontalArrangement=Arrangement.spacedBy(4.dp)) {listOf<Long?>(null,p.yellow,p.cyan,p.pink,p.paper).forEachIndexed {index,fill->Box(Modifier.size(48.dp).background(Color(fill ?: p.canvas)).semantics {contentDescription=listOf("Automatic colour","Palette accent one","Palette accent two","Palette accent three","Paper colour")[index]}.clickable {color=fill},contentAlignment=Alignment.Center) {if(color==fill) Icon(Icons.Default.Check,"Selected colour") else if(index==0) Text("Auto",fontSize=11.sp)}}}
         if(tile.kind in listOf(HomeTileKind.Note,HomeTileKind.Web,HomeTileKind.Dev,HomeTileKind.Habit,HomeTileKind.Widget)) OutlinedTextField(title,{title=it},label={Text("Title (optional)")},modifier=Modifier.fillMaxWidth(),singleLine=true)
         when(tile.kind) {
             HomeTileKind.Note,HomeTileKind.Habit -> OutlinedTextField(text,{text=it},label={Text(if(tile.kind==HomeTileKind.Note) "Your note" else "Habit")},modifier=Modifier.fillMaxWidth(),minLines=if(tile.kind==HomeTileKind.Note) 3 else 1)
@@ -154,7 +156,7 @@ import kotlin.math.ceil
         BrutalButton("Reset layout and settings",Modifier.fillMaxWidth()) {reset=true}
         Text("Swipe up from the bottom buttons to search. Swipe down on the header for notifications. Double tap empty canvas to lock with Power Bubble.",fontSize=13.sp)
     }
-    if(reset) AlertDialog(onDismissRequest={reset=false},title={Text("Reset Loud?")},text={Text("This clears your saved layout, settings, renamed and hidden apps, and launch history.")},confirmButton={TextButton({scope.launch {runCatching {vm.core.reset();host?.reconcileWidgets(vm.core.layout.persistedTiles().mapNotNull {it.config["widgetId"]?.toIntOrNull()}.toSet())}.onSuccess {vm.home()}.onFailure {vm.report("Reset failed")}};reset=false}) {Text("Reset")}},dismissButton={TextButton({reset=false}) {Text("Cancel")}})
+    if(reset) AlertDialog(onDismissRequest={reset=false},title={Text("Reset Loud?")},text={Text("This clears your saved layout, settings, renamed and hidden apps, and launch history. Your weather place is kept.")},confirmButton={TextButton({scope.launch {runCatching {vm.core.reset();host?.reconcileWidgets(vm.core.layout.persistedTiles().mapNotNull {it.config["widgetId"]?.toIntOrNull()}.toSet())}.onSuccess {vm.home()}.onFailure {vm.report("Reset failed")}};reset=false}) {Text("Reset")}},dismissButton={TextButton({reset=false}) {Text("Cancel")}})
 }
 
 @Composable fun PermissionCanvas(vm: LauncherViewModel,request: (String)->Unit) {
@@ -162,12 +164,12 @@ import kotlin.math.ceil
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),verticalArrangement=Arrangement.spacedBy(12.dp)) {
         Text("ACCESS, EXPLAINED",fontFamily=LocalLoud.current.heading,fontSize=30.sp,fontWeight=FontWeight.Bold)
         PermissionRow("Home launcher","Choose Loud as your default home app.",false,"Choose default") {if(!SystemActions.start(context,Intent(Settings.ACTION_HOME_SETTINGS))) vm.report("Home settings unavailable")}
-        PermissionRow("Calendar","Show events from your device's synced calendars, including Google Calendar.",permissions.calendar) {request(Manifest.permission.READ_CALENDAR)}
+        PermissionRow("Calendar","Show events from your device's synced calendars, including Google Calendar.",permissions.calendar) {if(permissions.calendar) SystemActions.openAppSettings(context) else request(Manifest.permission.READ_CALENDAR)}
         PermissionRow("Notification and music access","Count posted notifications and control active media. Counts are not guaranteed unread messages.",permissions.notificationAccess) {if(!SystemActions.openNotificationSettings(context)) vm.report("Notification settings unavailable")}
         PermissionRow("Usage access","Use device app frequency. Loud's own launch history works without this permission.",permissions.usageAccess) {if(!SystemActions.openUsageSettings(context)) vm.report("Usage settings unavailable")}
-        PermissionRow("Coarse location (optional)","Choose a city manually or use an available approximate location for weather.",permissions.coarseLocation) {if(permissions.coarseLocation) {if(!vm.system.useCoarseLocation()) vm.report("No coarse location fix available. Choose a city manually.")} else request(Manifest.permission.ACCESS_COARSE_LOCATION)}
-        PermissionRow("Power Bubble","Provides screen lock and notification shade gestures after its own setup.",permissions.powerBubbleAvailable,"Open Power Bubble") {if(!SystemActions.openApp(context,"io.github.peteroomen.powerbubble")) vm.report("Power Bubble is not installed")}
+        PermissionRow("Coarse location (optional)","Choose a city manually or use an available approximate location for weather.",permissions.coarseLocation,if(permissions.coarseLocation) "Use approximate location" else "Allow approximate location") {if(permissions.coarseLocation) {if(!vm.system.useCoarseLocation()) vm.report("No coarse location fix available. Choose a city manually.")} else request(Manifest.permission.ACCESS_COARSE_LOCATION)}
+        PermissionRow("Power Bubble","Provides screen lock and notification shade gestures after its own setup.",permissions.powerBubbleAvailable,"Open Power Bubble",enabledDescription="Available") {if(!SystemActions.openApp(context,"io.github.peteroomen.powerbubble")) vm.report("Power Bubble is not installed")}
         TextButton({if(!SystemActions.openAppSettings(context)) vm.report("App settings unavailable")}) {Text("Loud app settings")}
     }
 }
-@Composable private fun PermissionRow(title: String,copy: String,granted: Boolean,label: String="Set up",action: ()->Unit) {BrutalSurface(Modifier.fillMaxWidth()) {Row(verticalAlignment=Alignment.CenterVertically) {Text(title,fontWeight=FontWeight.Bold,modifier=Modifier.weight(1f));if(granted) Icon(Icons.Default.Check,"Enabled")};Text(copy,fontSize=13.sp);TextButton(action) {Text(if(granted && label=="Set up") "Manage" else label)}}}
+@Composable private fun PermissionRow(title: String,copy: String,granted: Boolean,label: String="Set up",enabledDescription: String="Enabled",action: ()->Unit) {BrutalSurface(Modifier.fillMaxWidth()) {Row(verticalAlignment=Alignment.CenterVertically) {Text(title,fontWeight=FontWeight.Bold,modifier=Modifier.weight(1f));if(granted) Icon(Icons.Default.Check,enabledDescription)};Text(copy,fontSize=13.sp);TextButton(action) {Text(if(granted && label=="Set up") "Manage" else label)}}}
