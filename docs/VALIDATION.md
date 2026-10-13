@@ -34,13 +34,15 @@ The repo also includes a JVM test for every text/fill pairing, including per-til
 
 ## Historical Phase 1 publication
 
-Initial source commit exists locally. Public GitHub push was blocked by automatic approval review pending explicit permission to publish source/workflow to the public repository. No remote commit or CI build is claimed.
+The initial review recorded a publication permission block. This was later resolved: the foundation and implementation checkpoint source are now on GitHub. The current implementation CI results below supersede that earlier publication boundary.
 
 ## Functional launcher validation
 
 Build stack: Kotlin 2.2.20, AGP 8.13.0, Gradle 8.14.3, compile/target SDK 36, min SDK 31, Compose, manual DI, Room/KSP, DataStore and WorkManager. The manifest registers HOME/DEFAULT, launcher entry, notification listener and consent-dependent widget binding. App data is excluded from Android cloud and device-transfer backup; explicit JSON export/import is the supported portable backup.
 
-Implementation native gate is pending integration:
+GitHub Actions [run 38347368017](https://github.com/peteroomen/loud-launcher/actions/runs/38347368017) for implementation commit `ed65e38304658cd20ec0a66ad71ad7b27925516a` passed Kotlin compilation, JVM unit tests and APK assembly. Android lint found 1 error and 40 warnings: `SystemRepository.useCoarseLocation()` needed a directly traceable coarse-location permission check before `getCurrentLocation()`. The targeted check is fixed in source; its next CI run must pass before the native gate is complete. No lint baseline or broad suppression was added.
+
+Required native gate:
 
 ```sh
 ./gradlew testDebugUnitTest lintDebug assembleDebug

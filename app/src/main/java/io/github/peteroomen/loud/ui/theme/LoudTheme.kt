@@ -6,6 +6,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.Typography
 import androidx.compose.material3.lightColorScheme
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
@@ -34,7 +35,7 @@ val LocalLoud = staticCompositionLocalOf { LoudStyle(LoudPalettes.Taxi, LoudShap
 fun LoudTheme(palette: LoudPalette = LoudPalettes.Taxi, shape: LoudShape = LoudShape.Square, haptics: Boolean = true, decorations: Boolean = true, content: @Composable () -> Unit) {
     CompositionLocalProvider(LocalLoud provides LoudStyle(palette, shape), LocalLoudHaptics provides haptics, LocalLoudDecorations provides decorations, LocalContentColor provides Color(palette.onCanvas)) {
         MaterialTheme(
-            colorScheme = lightColorScheme(
+            colorScheme = (if(palette == LoudPalettes.Night) darkColorScheme() else lightColorScheme()).copy(
                 primary = Color(palette.onCanvas), onPrimary = Color(palette.canvas),
                 background = Color(palette.canvas), onBackground = Color(palette.onCanvas),
                 surface = Color(if(palette == LoudPalettes.Night) palette.canvas else palette.paper), onSurface = Color(palette.onCanvas),

@@ -197,7 +197,7 @@ class SystemRepository(context: Context) : DefaultLifecycleObserver, Closeable {
         if (!runCatching { manager.isProviderEnabled(LocationManager.NETWORK_PROVIDER) }.getOrDefault(false)) return false
         locationCancellation?.cancel()
         val cancellation = CancellationSignal().also { locationCancellation = it }
-        return runCatching {
+        return try {
             manager.getCurrentLocation(LocationManager.NETWORK_PROVIDER, cancellation, app.mainExecutor) { location ->
                 if (!closed && allowed(Manifest.permission.ACCESS_COARSE_LOCATION)) {
                     if (location != null) selectWeatherPlace(WeatherPlace("Current location", location.latitude, location.longitude, usesLocation = true))
@@ -205,7 +205,8 @@ class SystemRepository(context: Context) : DefaultLifecycleObserver, Closeable {
                 }
                 locationCancellation = null
             }; true
-        }.getOrDefault(false)
+        } catch (_: SecurityException) { locationCancellation = null; false }
+        catch (_: Exception) { locationCancellation = null; false }
     }
     fun togglePlayPause() = MediaState.togglePlayPause()
     fun skipNext() = MediaState.skipNext()
