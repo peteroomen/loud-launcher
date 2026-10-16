@@ -17,3 +17,5 @@ object LoudPalettes {
     val all = listOf(Taxi, Riso, Acid, Night, Candy)
 }
 enum class LoudShape(val title: String) { Square("Square Punch"), Round("Round Paper") }
+/** Scales outline and hard-shadow weight independently of shape and palette. */
+enum class LoudIntensity(val title: String, val stroke: Float, val shadow: Float) { Calm("Calm", .75f, .6f), Standard("Standard", 1f, 1f), Loud("Loud", 1.5f, 1.6f) }

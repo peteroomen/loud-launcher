@@ -30,6 +30,8 @@ Android bundles these fonts; no font network calls. SIL Open Font License files 
 | Tap target | Minimum 48dp | Minimum 48dp |
 | Press | Translate into shadow, 90ms | Same |
 
+**Intensity** (Calm / Standard / Loud, default Standard) scales outline and hard-shadow weight for either shape: Calm ×0.75 stroke, ×0.6 shadow; Loud ×1.5 stroke, ×1.6 shadow (Square Punch Loud: 4.5dp border, 8dp shadow). Corners, palette and typography are unchanged, so contrast guarantees still hold. Shadow decorations off still removes shadows at every intensity.
+
 `ui/theme/Tokens.kt` defines five palettes: Taxi, Riso, Acid, Night Brutal and Candy. Shape and palette are independent. Night uses light canvas text, pale outlines and light-filled cards with dark text. All token text/fill combinations and allowed per-tile fill overrides must meet 4.5:1 contrast. The JVM test enforces this.
 
 Canvas follows the chosen theme colour. Wallpaper is optional and never required for the design to work. Dot-grid is optional. No glass, blur or wallpaper sampling is carried over from Niagara.
