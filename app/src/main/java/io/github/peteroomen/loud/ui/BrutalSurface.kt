@@ -71,7 +71,7 @@ fun BrutalSurface(
 @Composable
 fun Tag(label: String, modifier: Modifier = Modifier) {
     val s = LocalLoud.current
-    Text(label, modifier.border(2.dp, Color(s.palette.ink)).background(Color(s.palette.paper)).padding(horizontal = 7.dp, vertical = 4.dp),
+    Text(label, modifier.border(s.tagStroke, Color(s.palette.ink)).background(Color(s.palette.paper)).padding(horizontal = 7.dp, vertical = 4.dp),
         fontFamily = MonoFont, fontSize = 11.sp, color = Color(s.palette.ink))
 }
 

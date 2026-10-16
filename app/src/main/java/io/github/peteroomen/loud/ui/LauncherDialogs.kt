@@ -141,6 +141,8 @@ import kotlin.math.ceil
         Text("MAKE IT YOURS",fontFamily=LocalLoud.current.heading,fontWeight=FontWeight.Bold,fontSize=30.sp)
         Text("Appearance",fontWeight=FontWeight.Bold)
         Row(horizontalArrangement=Arrangement.spacedBy(8.dp)) {AppearanceShape.entries.forEach {shape->BrutalButton(shape.name,Modifier.weight(1f),settings.shape==shape) {vm.settings {it.copy(shape=shape)}}}}
+        Text("Intensity",fontWeight=FontWeight.Bold)
+        Row(horizontalArrangement=Arrangement.spacedBy(8.dp)) {AppearanceIntensity.entries.forEach {level->BrutalButton(level.name,Modifier.weight(1f),settings.intensity==level) {vm.settings {it.copy(intensity=level)}}}}
         LoudPalettes.all.forEach {p->BrutalSurface(Modifier.fillMaxWidth(),Color(p.paper),onClick={vm.settings {it.copy(palette=p.name)}}) {Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(8.dp)) {Text(p.name,modifier=Modifier.weight(1f));listOf(p.yellow,p.cyan,p.pink).forEach {fill->Box(Modifier.size(24.dp).background(Color(fill)))};if(settings.palette==p.name) Icon(Icons.Default.Check,"Selected palette")}}}
         Text("Grid columns",fontWeight=FontWeight.Bold)
         Row(horizontalArrangement=Arrangement.spacedBy(8.dp)) {(2..4).forEach {n->BrutalButton("$n",Modifier.weight(1f),settings.gridColumns==n) {vm.settings {it.copy(gridColumns=n)}}}}

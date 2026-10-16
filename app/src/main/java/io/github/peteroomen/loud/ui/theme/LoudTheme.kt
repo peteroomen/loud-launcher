@@ -22,23 +22,24 @@ import io.github.peteroomen.loud.R
 val DisplayFont = FontFamily(Font(R.font.barlow_condensed_bold, FontWeight.Bold))
 val BodyFont = FontFamily(Font(R.font.space_grotesk))
 val MonoFont = FontFamily(Font(R.font.space_mono))
-data class LoudStyle(val palette: LoudPalette, val shape: LoudShape) {
+data class LoudStyle(val palette: LoudPalette, val shape: LoudShape, val intensity: LoudIntensity = LoudIntensity.Standard) {
     val corners get() = RoundedCornerShape(if (shape == LoudShape.Round) 19.dp else 0.dp)
-    val stroke get() = if (shape == LoudShape.Round) 2.dp else 3.dp
-    val shadow get() = if (shape == LoudShape.Round) 4.dp else 5.dp
+    val stroke get() = (if (shape == LoudShape.Round) 2.dp else 3.dp) * intensity.stroke
+    val shadow get() = (if (shape == LoudShape.Round) 4.dp else 5.dp) * intensity.shadow
+    val tagStroke get() = 2.dp * intensity.stroke
     val heading get() = if (shape == LoudShape.Round) BodyFont else DisplayFont
 }
 val LocalLoudHaptics = staticCompositionLocalOf { true }
 val LocalLoudDecorations = staticCompositionLocalOf { true }
 val LocalLoud = staticCompositionLocalOf { LoudStyle(LoudPalettes.Taxi, LoudShape.Square) }
 @Composable
-fun LoudTheme(palette: LoudPalette = LoudPalettes.Taxi, shape: LoudShape = LoudShape.Square, haptics: Boolean = true, decorations: Boolean = true, content: @Composable () -> Unit) {
-    CompositionLocalProvider(LocalLoud provides LoudStyle(palette, shape), LocalLoudHaptics provides haptics, LocalLoudDecorations provides decorations, LocalContentColor provides Color(palette.onCanvas)) {
+fun LoudTheme(palette: LoudPalette = LoudPalettes.Taxi, shape: LoudShape = LoudShape.Square, haptics: Boolean = true, decorations: Boolean = true, intensity: LoudIntensity = LoudIntensity.Standard, content: @Composable () -> Unit) {
+    CompositionLocalProvider(LocalLoud provides LoudStyle(palette, shape, intensity), LocalLoudHaptics provides haptics, LocalLoudDecorations provides decorations, LocalContentColor provides Color(palette.onCanvas)) {
         MaterialTheme(
-            colorScheme = (if(palette == LoudPalettes.Night) darkColorScheme() else lightColorScheme()).copy(
+            colorScheme = (if(palette.dark) darkColorScheme() else lightColorScheme()).copy(
                 primary = Color(palette.onCanvas), onPrimary = Color(palette.canvas),
                 background = Color(palette.canvas), onBackground = Color(palette.onCanvas),
-                surface = Color(if(palette == LoudPalettes.Night) palette.canvas else palette.paper), onSurface = Color(palette.onCanvas),
+                surface = Color(if(palette.dark) palette.canvas else palette.paper), onSurface = Color(palette.onCanvas),
                 onSurfaceVariant = Color(palette.onCanvas), outline = Color(palette.onCanvas),
                 secondaryContainer = Color(palette.yellow), onSecondaryContainer = Color(palette.ink),
             ),

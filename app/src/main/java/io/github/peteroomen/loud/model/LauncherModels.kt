@@ -2,12 +2,14 @@ package io.github.peteroomen.loud.model
 import java.util.UUID
 
 enum class AppearanceShape { Square, Round }
+enum class AppearanceIntensity { Calm, Standard, Loud }
 data class AppPreferences(val hiddenIds: Set<String> = emptySet(), val renames: Map<String, String> = emptyMap()) {
     fun displayName(id: String, fallback: String) = renames[id] ?: fallback
 }
 data class LauncherSettings(val palette: String = "Taxi", val shape: AppearanceShape = AppearanceShape.Round,
     val gridColumns: Int = 4, val haptics: Boolean = true, val decorations: Boolean = true,
-    val wallpaperUri: String? = null, val appPreferences: AppPreferences = AppPreferences())
+    val wallpaperUri: String? = null, val appPreferences: AppPreferences = AppPreferences(),
+    val intensity: AppearanceIntensity = AppearanceIntensity.Standard)
 enum class HomeTileKind { Clock, Weather, Calendar, Music, Frequent, Web, Dev, App, Notifications, Note, Battery, Focus, Habit, Widget }
 data class HomeTile(val id: String = UUID.randomUUID().toString(), val kind: HomeTileKind,
     val columns: Int = 4, val rows: Int = 1, val color: Long? = null, val config: Map<String, String> = emptyMap())

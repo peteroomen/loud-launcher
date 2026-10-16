@@ -8,7 +8,7 @@ import java.net.URLDecoder
 data class LauncherBackup(val settings: LauncherSettings,val tiles: List<HomeTile>,val history: Map<String,LaunchStats>,val webHistory: List<WebVisit> = emptyList())
 object BackupCodec {
     const val VERSION=1
-    private val palettes=setOf("Taxi","Riso","Acid","Night Brutal","Candy")
+    private val palettes=setOf("Taxi","Riso","Acid","Night Brutal","Candy","Pop Garden","Baby Blue","Rave")
     private val configKeys=setOf("appId","text","url","title","urls","city","latitude","longitude","minutes","checked","widgetId","provider","profileSerial","deadline","remainingSeconds","minWidthDp","minHeightDp")
     private fun validateId(id: String) { require(id.isNotBlank() && id.length<=512 && id.none { it.isISOControl() }) { "Invalid ID" } }
     fun validateSettings(s: LauncherSettings) {
@@ -42,13 +42,13 @@ object BackupCodec {
     }
     fun encodeSettings(s: LauncherSettings): String {
         validateSettings(s)
-        return JSONObject().put("palette",s.palette).put("shape",s.shape.name).put("gridColumns",s.gridColumns).put("haptics",s.haptics).put("decorations",s.decorations).put("wallpaperUri",s.wallpaperUri ?: JSONObject.NULL).put("hiddenIds",JSONArray(s.appPreferences.hiddenIds.sorted())).put("renames",JSONObject(s.appPreferences.renames)).toString()
+        return JSONObject().put("palette",s.palette).put("shape",s.shape.name).put("gridColumns",s.gridColumns).put("haptics",s.haptics).put("decorations",s.decorations).put("intensity",s.intensity.name).put("wallpaperUri",s.wallpaperUri ?: JSONObject.NULL).put("hiddenIds",JSONArray(s.appPreferences.hiddenIds.sorted())).put("renames",JSONObject(s.appPreferences.renames)).toString()
     }
     fun decodeSettings(json: String): LauncherSettings {
-        val o=JSONObject(json); keys(o,setOf("palette","shape","gridColumns","haptics","decorations","wallpaperUri","hiddenIds","renames"))
+        val o=JSONObject(json); keys(o,setOf("palette","shape","gridColumns","haptics","decorations","intensity","wallpaperUri","hiddenIds","renames"))
         val h=o.getJSONArray("hiddenIds"); val r=o.getJSONObject("renames")
         require(o.get("haptics") is Boolean && o.get("decorations") is Boolean)
-        return LauncherSettings(o.getString("palette"),AppearanceShape.valueOf(o.getString("shape")),int(o,"gridColumns"),o.getBoolean("haptics"),o.getBoolean("decorations"),if(o.isNull("wallpaperUri")) null else o.getString("wallpaperUri"),AppPreferences((0 until h.length()).map { h.getString(it) }.toSet(),r.keys().asSequence().associateWith { r.getString(it) })).also(::validateSettings)
+        return LauncherSettings(o.getString("palette"),AppearanceShape.valueOf(o.getString("shape")),int(o,"gridColumns"),o.getBoolean("haptics"),o.getBoolean("decorations"),if(o.isNull("wallpaperUri")) null else o.getString("wallpaperUri"),AppPreferences((0 until h.length()).map { h.getString(it) }.toSet(),r.keys().asSequence().associateWith { r.getString(it) }),if(o.has("intensity")) AppearanceIntensity.valueOf(o.getString("intensity")) else AppearanceIntensity.Standard).also(::validateSettings)
     }
     fun encodeConfig(c: Map<String,String>)=JSONObject(c).toString()
     fun decodeConfig(json: String)=JSONObject(json).let { o -> o.keys().asSequence().associateWith { o.getString(it) } }

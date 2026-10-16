@@ -25,6 +25,9 @@ Independently calculated WCAG relative luminance from the Kotlin token values. L
 | Acid | 8.26:1 |
 | Night Brutal | 9.42:1 |
 | Candy | 10.75:1 |
+| Pop Garden | 9.18:1 |
+| Baby Blue | 10.40:1 |
+| Rave | 7.01:1 |
 
 The repo also includes a JVM test for every text/fill pairing, including per-tile colour override fills.
 

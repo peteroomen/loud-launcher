@@ -65,6 +65,7 @@ fun LoudLauncherApp(vm: LauncherViewModel,widgets: WidgetHostController) {
     val keyboard=LocalSoftwareKeyboardController.current
     val palette=LoudPalettes.all.firstOrNull {it.name==settings.palette} ?: LoudPalettes.Taxi
     val shape=if(settings.shape==AppearanceShape.Round) LoudShape.Round else LoudShape.Square
+    val intensity=LoudIntensity.valueOf(settings.intensity.name)
     val snackbar=remember {SnackbarHostState()}
     suspend fun reconcileWidgets() {widgets.reconcileWidgets(vm.core.layout.persistedTiles().mapNotNull {it.config["widgetId"]?.toIntOrNull()}.toSet())}
     val permissions=rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {vm.system.refresh()}
@@ -83,9 +84,9 @@ fun LoudLauncherApp(vm: LauncherViewModel,widgets: WidgetHostController) {
     } }
     LaunchedEffect(message) {message?.let {snackbar.showSnackbar(it);vm.message.value=null}}
     LaunchedEffect(generation) {keyboard?.hide()}
-    SideEffect {(context as? Activity)?.window?.let {WindowCompat.getInsetsController(it,it.decorView).apply {isAppearanceLightStatusBars=palette!=LoudPalettes.Night;isAppearanceLightNavigationBars=palette!=LoudPalettes.Night}}}
+    SideEffect {(context as? Activity)?.window?.let {WindowCompat.getInsetsController(it,it.decorView).apply {isAppearanceLightStatusBars=!palette.dark;isAppearanceLightNavigationBars=!palette.dark}}}
     BackHandler(page!=LauncherPage.Live || edit) {vm.home()}
-    LoudTheme(palette,shape,settings.haptics,settings.decorations) {
+    LoudTheme(palette,shape,settings.haptics,settings.decorations,intensity) {
         CompositionLocalProvider(LocalWidgetHost provides widgets) {
             Box(Modifier.fillMaxSize().background(Color(palette.canvas))) {
                 WallpaperImage(settings.wallpaperUri)
