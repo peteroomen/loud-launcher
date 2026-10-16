@@ -84,7 +84,7 @@ fun LoudLauncherApp(vm: LauncherViewModel,widgets: WidgetHostController) {
     } }
     LaunchedEffect(message) {message?.let {snackbar.showSnackbar(it);vm.message.value=null}}
     LaunchedEffect(generation) {keyboard?.hide()}
-    SideEffect {(context as? Activity)?.window?.let {WindowCompat.getInsetsController(it,it.decorView).apply {isAppearanceLightStatusBars=palette!=LoudPalettes.Night;isAppearanceLightNavigationBars=palette!=LoudPalettes.Night}}}
+    SideEffect {(context as? Activity)?.window?.let {WindowCompat.getInsetsController(it,it.decorView).apply {isAppearanceLightStatusBars=!palette.dark;isAppearanceLightNavigationBars=!palette.dark}}}
     BackHandler(page!=LauncherPage.Live || edit) {vm.home()}
     LoudTheme(palette,shape,settings.haptics,settings.decorations,intensity) {
         CompositionLocalProvider(LocalWidgetHost provides widgets) {

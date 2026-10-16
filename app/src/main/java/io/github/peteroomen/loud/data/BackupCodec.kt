@@ -8,7 +8,7 @@ import java.net.URLDecoder
 data class LauncherBackup(val settings: LauncherSettings,val tiles: List<HomeTile>,val history: Map<String,LaunchStats>,val webHistory: List<WebVisit> = emptyList())
 object BackupCodec {
     const val VERSION=1
-    private val palettes=setOf("Taxi","Riso","Acid","Night Brutal","Candy")
+    private val palettes=setOf("Taxi","Riso","Acid","Night Brutal","Candy","Pop Garden","Baby Blue","Rave")
     private val configKeys=setOf("appId","text","url","title","urls","city","latitude","longitude","minutes","checked","widgetId","provider","profileSerial","deadline","remainingSeconds","minWidthDp","minHeightDp")
     private fun validateId(id: String) { require(id.isNotBlank() && id.length<=512 && id.none { it.isISOControl() }) { "Invalid ID" } }
     fun validateSettings(s: LauncherSettings) {

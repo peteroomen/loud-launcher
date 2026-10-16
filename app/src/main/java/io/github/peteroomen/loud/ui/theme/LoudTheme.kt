@@ -36,10 +36,10 @@ val LocalLoud = staticCompositionLocalOf { LoudStyle(LoudPalettes.Taxi, LoudShap
 fun LoudTheme(palette: LoudPalette = LoudPalettes.Taxi, shape: LoudShape = LoudShape.Square, haptics: Boolean = true, decorations: Boolean = true, intensity: LoudIntensity = LoudIntensity.Standard, content: @Composable () -> Unit) {
     CompositionLocalProvider(LocalLoud provides LoudStyle(palette, shape, intensity), LocalLoudHaptics provides haptics, LocalLoudDecorations provides decorations, LocalContentColor provides Color(palette.onCanvas)) {
         MaterialTheme(
-            colorScheme = (if(palette == LoudPalettes.Night) darkColorScheme() else lightColorScheme()).copy(
+            colorScheme = (if(palette.dark) darkColorScheme() else lightColorScheme()).copy(
                 primary = Color(palette.onCanvas), onPrimary = Color(palette.canvas),
                 background = Color(palette.canvas), onBackground = Color(palette.onCanvas),
-                surface = Color(if(palette == LoudPalettes.Night) palette.canvas else palette.paper), onSurface = Color(palette.onCanvas),
+                surface = Color(if(palette.dark) palette.canvas else palette.paper), onSurface = Color(palette.onCanvas),
                 onSurfaceVariant = Color(palette.onCanvas), outline = Color(palette.onCanvas),
                 secondaryContainer = Color(palette.yellow), onSecondaryContainer = Color(palette.ink),
             ),

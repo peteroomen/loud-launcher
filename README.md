@@ -1,6 +1,6 @@
 # Loud
 
-A maximalist Android 12+ home launcher with **Square Punch** and **Round Paper** shapes, five palettes, a theme canvas and optional wallpaper.
+A maximalist Android 12+ home launcher with **Square Punch** and **Round Paper** shapes, eight palettes, a theme canvas and optional wallpaper.
 
 The native app now uses installed apps and persistent data: searchable A–Z app list, shortcuts, hide/rename, editable tiles, Room layout/history, DataStore appearance, and JSON export/import. Live tiles include clock/alarms, weather, synced device calendars, media controls, notification counts, app frequency, browser/developer links, notes, battery, focus and habits. Third-party Android widgets use the standard consent and configuration flow. Optional Power Bubble supplies screen-off and notification-shade actions.
 
